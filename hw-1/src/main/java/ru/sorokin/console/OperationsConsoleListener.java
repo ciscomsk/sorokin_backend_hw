@@ -27,8 +27,7 @@ public class OperationsConsoleListener {
 
     public void start() {
         System.out.println("MiniBank started. Type EXIT to stop.");
-        String availableCommands = ConsoleOperationType.getAvailableCommandsAsString();
-        System.out.println("Available commands: " + availableCommands);
+        System.out.println("Available commands: " + ConsoleOperationType.getAvailableCommandsAsString());
 
         String input;
         do {
