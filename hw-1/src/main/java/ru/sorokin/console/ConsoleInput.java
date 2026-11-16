@@ -24,7 +24,7 @@ public class ConsoleInput {
                 return input;
             }
 
-            System.out.println("Invalid command");
+            System.out.println("Unknown command");
         }
     }
 
