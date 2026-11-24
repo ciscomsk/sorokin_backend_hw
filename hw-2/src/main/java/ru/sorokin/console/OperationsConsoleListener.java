@@ -1,0 +1,66 @@
+package ru.sorokin.console;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import ru.sorokin.operations.ConsoleOperationType;
+import ru.sorokin.operations.OperationCommand;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+@Component
+public class OperationsConsoleListener {
+    private final Map<ConsoleOperationType, OperationCommand> commandMap;
+    private final ConsoleInput consoleInput;
+    private boolean running;
+
+    @Autowired
+    public OperationsConsoleListener(List<OperationCommand> operationCommandList, ConsoleInput consoleInput) {
+        this.commandMap = operationCommandList.stream().collect(Collectors.toMap(OperationCommand::getOperationType, c -> c));
+        this.consoleInput = consoleInput;
+        this.running = true;
+    }
+
+    public void runBank() {
+        init();
+        try {
+            process();
+        } catch (EndOfInputException e) {
+            running = false;
+            System.out.println("MiniBank stopped.");
+        }
+    }
+
+    private void process() {
+        while (running) {
+            ConsoleOperationType nextOperation = consoleInput.readOperationType();
+            processNextCommand(nextOperation);
+            if (nextOperation == ConsoleOperationType.EXIT) {
+                running = false;
+            }
+        }
+    }
+
+    private void processNextCommand(ConsoleOperationType operationType) {
+        try {
+            OperationCommand command = commandMap.get(operationType);
+            if (command == null) {
+                throw new IllegalStateException("No command handler for " + operationType);
+            }
+            command.execute();
+        } catch (EndOfInputException e) {
+            throw e;
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println("Error: " + e.getMessage());
+        } catch (Exception e) {
+            String message = e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+            System.out.println("Error: " + message);
+        }
+    }
+
+    private void init() {
+        System.out.println("MiniBank started. Type EXIT to stop.");
+        consoleInput.printAvailableCommands();
+    }
+}
